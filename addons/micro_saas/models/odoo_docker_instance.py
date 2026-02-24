@@ -108,15 +108,30 @@ class OdooDockerInstance(models.Model):
             new_log = "</br>" + str(now.strftime("%m/%d/%Y, %H:%M:%S")) + " " + str(message)
         self.log = new_log
 
+    # @api.depends('http_port')
+    # def _compute_instance_url(self):
+    #     base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
+    #     base_url = base_url.split(':')
+    #     base_url = base_url[0] + ':' + base_url[1] + ':'
+    #     for instance in self:
+    #         if not instance.http_port:
+    #             continue
+    #         instance.instance_url = f"{base_url}{instance.http_port}"
+
     @api.depends('http_port')
     def _compute_instance_url(self):
-        base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
-        base_url = base_url.split(':')
-        base_url = base_url[0] + ':' + base_url[1] + ':'
+        codespace_name = os.environ.get('CODESPACE_NAME')
+        
         for instance in self:
             if not instance.http_port:
                 continue
-            instance.instance_url = f"{base_url}{instance.http_port}"
+            if codespace_name:
+                instance.instance_url = f"https://{codespace_name}-{instance.http_port}.app.github.dev"
+            else:
+                base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
+                base_url = base_url.split(':')
+                base_url = base_url[0] + ':' + base_url[1] + ':'
+                instance.instance_url = f"{base_url}{instance.http_port}"
 
     def open_instance_url(self):
         for instance in self:
