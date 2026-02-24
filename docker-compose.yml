@@ -1,0 +1,30 @@
+services:
+  web:
+    build: .
+    container_name: odoo17_dev_app
+    depends_on:
+      - db
+    ports:
+      - "8076:8069"
+    volumes:
+      - ./addons:/mnt/extra-addons
+      - odoo17-web-data-dev:/var/lib/odoo
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - HOST=db
+      - USER=${DB_USER}
+      - PASSWORD=${DB_PASSWORD}
+
+  db:
+    image: postgres:15
+    container_name: odoo170_dev_db
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - odoo17-db-data-dev:/var/lib/postgresql/data
+
+volumes:
+  odoo17-web-data-dev:
+  odoo17-db-data-dev:
